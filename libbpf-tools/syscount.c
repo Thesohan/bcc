@@ -127,7 +127,8 @@ static const char *agg_col(struct data_ext_t *val, char *buf, size_t size)
 	if (env.process) {
 		snprintf(buf, size, "%-6u %-15s", val->key, val->comm);
 	} else {
-		syscall_name(val->key, buf, size);
+		if (syscall_name(val->key, buf, size) < 0)
+			snprintf(buf, size, "[unknown: %u]", val->key);
 	}
 	return buf;
 }
@@ -191,7 +192,7 @@ static void print_timestamp()
 
 static bool batch_map_ops = true; /* hope for the best */
 
-static bool read_vals_batch(int fd, struct data_ext_t *vals, __u32 *count)
+static int read_vals_batch(int fd, struct data_ext_t *vals, __u32 *count)
 {
 	struct data_t orig_vals[*count];
 	void *in = NULL, *out;
@@ -203,13 +204,13 @@ static bool read_vals_batch(int fd, struct data_ext_t *vals, __u32 *count)
 		n = *count - n_read;
 		err = bpf_map_lookup_and_delete_batch(fd, &in, &out,
 				keys + n_read, orig_vals + n_read, &n, NULL);
-		if (err && errno != ENOENT) {
+		if (err < 0 && err != -ENOENT) {
 			/* we want to propagate EINVAL upper, so that
 			 * the batch_map_ops flag is set to false */
-			if (errno != EINVAL)
+			if (err != -EINVAL)
 				warn("bpf_map_lookup_and_delete_batch: %s\n",
 				     strerror(-err));
-			return false;
+			return err;
 		}
 		n_read += n;
 		in = out;
@@ -223,7 +224,7 @@ static bool read_vals_batch(int fd, struct data_ext_t *vals, __u32 *count)
 	}
 
 	*count = n_read;
-	return true;
+	return 0;
 }
 
 static bool read_vals(int fd, struct data_ext_t *vals, __u32 *count)
@@ -236,12 +237,12 @@ static bool read_vals(int fd, struct data_ext_t *vals, __u32 *count)
 	int err;
 
 	if (batch_map_ops) {
-		bool ok = read_vals_batch(fd, vals, count);
-		if (!ok && errno == EINVAL) {
+		err = read_vals_batch(fd, vals, count);
+		if (err < 0 && err == -EINVAL) {
 			/* fall back to a racy variant */
 			batch_map_ops = false;
 		} else {
-			return ok;
+			return err >= 0;
 		}
 	}
 

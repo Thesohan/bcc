@@ -217,7 +217,7 @@ static void print_count_ipv4(int map_fd)
 	struct in_addr src;
 	struct in_addr dst;
 
-	if (dump_hash(map_fd, keys, key_size, counts, value_size, &n, &zero)) {
+	if (dump_hash(map_fd, keys, key_size, counts, value_size, &n, &zero, false)) {
 		warn("dump_hash: %s", strerror(errno));
 		return;
 	}
@@ -250,7 +250,7 @@ static void print_count_ipv6(int map_fd)
 	struct in6_addr src;
 	struct in6_addr dst;
 
-	if (dump_hash(map_fd, keys, key_size, counts, value_size, &n, &zero)) {
+	if (dump_hash(map_fd, keys, key_size, counts, value_size, &n, &zero, false)) {
 		warn("dump_hash: %s", strerror(errno));
 		return;
 	}
@@ -296,7 +296,7 @@ static void print_events_header()
 		printf("%-9s", "TIME(s)");
 	if (env.print_uid)
 		printf("%-6s", "UID");
-	printf("%-6s %-12s %-2s %-16s %-16s",
+	printf("%-6s %-16s %-2s %-16s %-16s",
 	       "PID", "COMM", "IP", "SADDR", "DADDR");
 	if (env.source_port)
 		printf(" %-5s", "SPORT");
@@ -341,7 +341,7 @@ static void handle_event(void *ctx, int cpu, void *data, __u32 data_sz)
 	if (env.print_uid)
 		printf("%-6d", event.uid);
 
-	printf("%-6d %-12.12s %-2d %-16s %-16s",
+	printf("%-6d %-16.16s %-2d %-16s %-16s",
 	       event.pid, event.task,
 	       event.af == AF_INET ? 4 : 6,
 	       inet_ntop(event.af, &s, src, sizeof(src)),

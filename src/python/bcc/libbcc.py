@@ -133,6 +133,8 @@ lib.bpf_has_kernel_btf.restype = ct.c_bool
 lib.bpf_has_kernel_btf.argtypes = None
 lib.kernel_struct_has_field.restype = ct.c_int
 lib.kernel_struct_has_field.argtypes = [ct.c_char_p, ct.c_char_p]
+lib.kernel_enum_has_val.restype = ct.c_int
+lib.kernel_enum_has_val.argtypes = [ct.c_char_p, ct.c_char_p]
 lib.bpf_open_perf_buffer.restype = ct.c_void_p
 lib.bpf_open_perf_buffer.argtypes = [_RAW_CB_TYPE, _LOST_CB_TYPE, ct.py_object, ct.c_int, ct.c_int, ct.c_int]
 
@@ -231,6 +233,8 @@ class bcc_symbol_option(ct.Structure):
             ('use_symbol_type', ct.c_uint),
         ]
 
+lib.bcc_procutils_which_so_in_process.restype = ct.POINTER(ct.c_char)
+lib.bcc_procutils_which_so_in_process.argtypes = [ct.c_char_p, ct.c_int]
 lib.bcc_procutils_which_so.restype = ct.POINTER(ct.c_char)
 lib.bcc_procutils_which_so.argtypes = [ct.c_char_p, ct.c_int]
 lib.bcc_procutils_free.restype = None

@@ -28,6 +28,8 @@
 /fsdist
 /fsslower
 /funclatency
+/fusedist
+/fuseslower
 /futexctn
 /gethostlatency
 /hardirqs
@@ -53,6 +55,7 @@
 /sigsnoop
 /slabratetop
 /softirqs
+/softirqslower
 /solisten
 /statsnoop
 /syncsnoop
@@ -70,3 +73,5 @@
 /wakeuptime
 /xfsdist
 /xfsslower
+/zfsdist
+/zfsslower
